@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Galaxy Punya Nisa — 24/09/2026</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #020308;
+            font-family: 'Poppins', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        #container {
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at center, #080d1a 0%, #010205 100%);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 11;
+            display: block;
+        }
+
+        /* ---- LOADING SCREEN SIMPEL & NATURAL ---- */
+        #loading-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 10005;
+            background: #03050a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 28px;
+            text-align: center;
+            transition: opacity 0.9s ease, visibility 0.9s ease;
+        }
+
+        #loading-screen.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .loader-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #ffffff;
+            margin-bottom: 6px;
+        }
+
+        .loader-date {
+            font-size: 0.85rem;
+            font-weight: 400;
+            letter-spacing: 2px;
+            color: #8fa3bf;
+            margin-bottom: 28px;
+        }
+
+        .progress-wrapper {
+            width: 250px;
+            max-width: 80vw;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 999px;
+            overflow: hidden;
+            margin-bottom: 14px;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #ffffff;
+            border-radius: 999px;
+            transition: width 0.25s ease-out;
+        }
+
+        .loader-status {
+            font-size: 0.86rem;
+            color: #d6e2f0;
+            min-height: 22px;
+            margin-bottom: 28px;
+        }
+
+        #enter-galaxy-btn {
+            opacity: 0;
+            transform: translateY(8px);
+            pointer-events: none;
+            padding: 12px 30px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: #050811;
+            background: #ffffff;
+            border: none;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: opacity 0.4s ease, transform 0.3s ease;
+        }
+
+        #enter-galaxy-btn.ready {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        #enter-galaxy-btn:active {
+            transform: scale(0.96);
+        }
+
+        #dark-overlay {
+            position: fixed;
+            z-index: 5;
+            inset: 0;
+            background: rgba(3, 5, 10, 0.92);
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 1.1s ease;
+        }
+        body.intro-started #dark-overlay {
+            opacity: 0;
+        }
+
+        /* ---- TEKS PETUNJUK BAWAH LAYAR ---- */
+        #tap-hint {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 30;
+            padding: 9px 18px;
+            border-radius: 999px;
+            background: rgba(10, 14, 24, 0.72);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #f0f4f8;
+            font-size: 0.76rem;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s ease;
+            white-space: nowrap;
+        }
+        body.intro-started #tap-hint {
+            opacity: 0.95;
+        }
+
+        /* ---- POPUP FOTO & KATA-KATA ---- */
+        #photo-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 10010;
+            background: rgba(0, 0, 0, 0.78);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        #photo-modal.show {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .memory-card {
+            position: relative;
+            width: 100%;
+            max-width: 350px;
+            background: #0d121d;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 18px;
+            padding: 16px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.75);
+            text-align: center;
+            transform: scale(0.92) translateY(14px);
+            transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        #photo-modal.show .memory-card {
+            transform: scale(1) translateY(0);
+        }
+
+        .memory-badge {
+            display: inline-block;
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: #9fb3c8;
+            margin-bottom: 10px;
+        }
+
+        .memory-img-wrap {
+            width: 100%;
+            max-height: 52vh;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 14px;
+            background: #05070c;
+        }
+
+        .memory-img-wrap img {
+            width: 100%;
+            height: 100%;
+            max-height: 52vh;
+            object-fit: cover;
+            display: block;
+        }
+
+        .memory-quote {
+            font-size: 0.92rem;
+            line-height: 1.6;
+            color: #f0f4f8;
+            font-weight: 400;
+            padding: 0 4px;
+            margin-bottom: 16px;
+        }
+
+        .close-card-btn {
+            padding: 9px 24px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #050811;
+            background: #ffffff;
+            border: none;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .close-card-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.152.2/build/three.module.js",
+        "three/addons/controls/OrbitControls.js": "https://unpkg.com/three@0.152.2/examples/jsm/controls/OrbitControls.js"
+      }
+    }
+    </script>
+</head>
+
+<body>
+    <audio id="bg-music" loop preload="auto">
+        <source src="https://raw.githubusercontent.com/johanwirawan/ika/main/L%27amore%20dice%20ciao%20%28From%20La%20matriarca%20-%20The%20Libertine%29%20%281%29.mp3" type="audio/mpeg" />
+    </audio>
+
+    <!-- LOADING SCREEN -->
+    <div id="loading-screen">
+        <div class="loader-title">GALAXY PUNYA NISA</div>
+        <div class="loader-date">24 • 09 • 2026</div>
+        <div class="progress-wrapper">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="loader-status" id="loader-status">10% memuat isi poto nisa</div>
+        <button id="enter-galaxy-btn">Masuk Galaxy</button>
+    </div>
+
+    <!-- MODAL KARTU PESAN SAAT FOTO DIKETUK -->
+    <div id="photo-modal">
+        <div class="memory-card" id="memory-card">
+            <div class="memory-badge" id="memory-badge">Foto #1</div>
+            <div class="memory-img-wrap">
+                <img id="memory-img" src="" alt="Nissa">
+            </div>
+            <p class="memory-quote" id="memory-quote"></p>
+            <button class="close-card-btn" id="close-card-btn">Tutup</button>
+        </div>
+    </div>
+
+    <div id="tap-hint">JANGAN PENCET DISETIAP FOTO KAMU YAK🤪</div>
+    <div id="container"></div>
+    <div id="dark-overlay"></div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // ---- ELEMENT UI ----
+        const loadingScreen = document.getElementById('loading-screen');
+        const progressBar = document.getElementById('progress-bar');
+        const loaderStatus = document.getElementById('loader-status');
+        const enterBtn = document.getElementById('enter-galaxy-btn');
+
+        const photoModal = document.getElementById('photo-modal');
+        const memoryBadge = document.getElementById('memory-badge');
+        const memoryImg = document.getElementById('memory-img');
+        const memoryQuote = document.getElementById('memory-quote');
+        const closeCardBtn = document.getElementById('close-card-btn');
+
+        // ---- INISIALISASI SCENE, CAMERA, RENDERER ----
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x020308, 0.0014);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
+        camera.position.set(0, 20, 30);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        document.getElementById('container').appendChild(renderer.domElement);
+
+        // ---- CONTROLS ----
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.5;
+        controls.enabled = false;
+        controls.target.set(0, 0, 0);
+        controls.enablePan = false;
+        controls.minDistance = 15;
+        controls.maxDistance = 300;
+        controls.zoomSpeed = 0.35;
+        controls.rotateSpeed = 0.35;
+        controls.update();
+
+        // ---- FUNGSI GLOW HALUS ----
+        function createGlowMaterial(color, size = 128, opacity = 0.55) {
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = size;
+            const context = canvas.getContext('2d');
+            const gradient = context.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+            gradient.addColorStop(0, color);
+            gradient.addColorStop(1, 'rgba(0,0,0,0)');
+            context.fillStyle = gradient;
+            context.fillRect(0, 0, size, size);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const material = new THREE.SpriteMaterial({
+                map: texture,
+                transparent: true,
+                opacity: opacity,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending
+            });
+            return new THREE.Sprite(material);
+        }
+
+        const centralGlow = createGlowMaterial('rgba(160, 215, 255, 0.75)', 156, 0.25);
+        centralGlow.scale.set(9, 9, 1);
+        scene.add(centralGlow);
+
+        for (let i = 0; i < 12; i++) {
+            const hue = 205 + Math.random() * 25;
+            const color = `hsla(${hue}, 65%, 45%, 0.35)`;
+            const nebula = createGlowMaterial(color, 256);
+            nebula.scale.set(100, 100, 1);
+            nebula.position.set(
+                (Math.random() - 0.5) * 175,
+                (Math.random() - 0.5) * 175,
+                (Math.random() - 0.5) * 175
+            );
+            scene.add(nebula);
+        }
+
+        // ---- GALAXY & 54 FOTO + 54 PESAN BERBEDA ----
+        const galaxyParameters = {
+            count: 90000,
+            arms: 6,
+            radius: 100,
+            spin: 0.5,
+            randomness: 0.2,
+            randomnessPower: 20,
+            insideColor: new THREE.Color(0x3a7bd5),
+            outsideColor: new THREE.Color(0x90caf9),
+        };
+
+        const heartImages = [
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20260923-WA0016.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20260923-WA0017.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20260923-WA0020.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20260924-WA0001.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20260924-WA0002.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20260924-WA0003.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20260924-WA0004.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261105-WA0082.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261105-WA0083.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261105-WA0085.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0037.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0038.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0040.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0041.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0042.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0043.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0044.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0045.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0046.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0047.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0049.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0050.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0051.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0052.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0053.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0055.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0058.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0059.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0060.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0061.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0062.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0064.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0065.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0066.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0067.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0068.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0069.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0070.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0071.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0073.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0076.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0077.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0078.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0079.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0080.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0081.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0084.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0086.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0087.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0088.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0089.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0092.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261116-WA0094.jpg',
+            'https://raw.githubusercontent.com/johanwirawan/Nissa-/refs/heads/main/IMG-20261117-WA0020.jpg'
+        ];
+
+        const photoMessages = [
+            "Senyummu di foto ini selalu berhasil bikin capek seharian langsung hilang.",
+            "Setiap hari bareng kamu rasanya selalu jadi cerita favorit yang nggak pernah bosan aku ulang.",
+            "Kamu punya cara sederhana buat bikin suasana tenang cuma lewat kehadiranmu.",
+            "24 September 2026 — tanggal spesial buat orang yang paling berarti di hidupku.",
+            "Nggak perlu alasan ribet buat bersyukur, lihat kamu ketawa bahagia aja udah cukup banget.",
+            "Kalau ditanya bagian paling indah di sini, jawabannya tetap kamu, Nissa.",
+            "Makasih ya udah selalu jadi tempat paling nyaman buat pulang di setiap cerita hariku.",
+            "Ada tenang yang nggak pernah aku temuin di tempat lain selain pas lihat kamu tersenyum.",
+            "Semoga semua hal baik di dunia ini selalu nemuin jalan pulang ke kamu.",
+            "Kamu itu kayak langit malam yang cerah, selalu enak dipandang dari sudut mana pun.",
+            "Setiap foto di sini nyimpen cerita kecil tentang betapa berharganya kamu buat aku.",
+            "Tetap jadi Nissa yang lembut, ceria, dan selalu bawa energi positif ke mana pun kamu pergi.",
+            "Dari sekian banyak kebetulan di dunia, kenal dan punya kamu adalah hal yang paling aku syukuri.",
+            "Jangan pernah ragu sama diri kamu sendiri ya, karena di mataku kamu udah luar biasa banget.",
+            "Senyummu bukti nyata kalau hal paling manis di dunia nggak pernah butuh banyak gaya.",
+            "Bareng kamu, hal-hal sederhana pun selalu berubah jadi kenangan yang mahal.",
+            "Aku selalu kagum sama cara kamu ngejalanin hari dengan sabar dan hati yang hangat.",
+            "Andai waktu bisa dilambatin, aku pengen berhenti lebih lama di setiap momen ketawa kita.",
+            "Kamu itu cantik bukan cuma dilihat mata, tapi juga kerasa banget baiknya sampai ke hati.",
+            "Di antara banyaknya foto di sini, pesonamu nggak pernah ada yang gagal.",
+            "Semoga setiap impian yang lagi kamu perjuangin pelan-pelan terwujud satu per satu ya.",
+            "Kehadiranmu bikin hari-hari biasa terasa jauh lebih bermakna dari sebelumnya.",
+            "Makasih udah selalu ada, mau dengerin, dan ngertiin tanpa perlu banyak kata.",
+            "Kamu adalah alasan kenapa hari-hari biasa selalu layak buat ditunggu.",
+            "Sederhana aja: lihat kamu bahagia itu salah satu doa terbaik yang selalu aku panjatin.",
+            "Manismu nggak pernah ngebosenin, justru makin kelihatan tiap kali aku lihat fotomu lagi.",
+            "Semoga langkahmu selalu dimudahin dan hatimu selalu dijauhin dari segala resah.",
+            "Kamu punya pembawaan tenang yang bikin siapa pun di dekatmu merasa nyaman.",
+            "Satu foto ini aja udah cukup buat ngingetin betapa beruntungnya aku punya kamu.",
+            "Terus bersinar dengan caramu sendiri ya, karena kehadiranmu selalu kasih warna di hidupku.",
+            "Di balik setiap senyum di foto ini, ada rasa syukur yang besar karena kita dipertemukan.",
+            "Kamu adalah bagian terbaik dari cerita yang nggak pernah pengen aku akhiri.",
+            "Bintang-bintang di langit aja rasanya kalah manis sama senyumanmu di foto ini.",
+            "Nggak ada kata yang cukup panjang buat jelasin betapa spesialnya kamu buat aku.",
+            "Semoga kebahagiaan selalu nemenin kamu, hari ini, besok, dan seterusnya.",
+            "Kamu ngajarin aku kalau ketulusan selalu nemuin tempat terbaiknya di hati.",
+            "Tiap kali aku buka foto ini, rasanya semua penat langsung reda gitu aja.",
+            "Tetap tumbuh jadi pribadi yang hebat, hangat, dan selalu penuh kasih sayang ya.",
+            "Dunia boleh luas, tapi duniaku terasa lengkap tiap kali ada kamu di dalamnya.",
+            "Kamu itu kayak lagu favorit yang nggak pernah bosen diputar berkali-kali.",
+            "Makasih udah jadi bagian paling berharga dalam perjalanan waktuku.",
+            "Cantikmu itu alami, tulus, dan selalu berhasil bikin aku ikut senyum sendiri.",
+            "Semoga semua kebaikan yang pernah kamu kasih ke orang lain balik berlipat ganda ke kamu.",
+            "Sejauh apa pun waktu jalan nanti, kamu bakal selalu punya tempat paling spesial.",
+            "Momen ini pengingat kalau bahagia itu sesederhana ketemu orang yang tepat.",
+            "Kamu selalu berhasil bikin suasana terasa lebih hangat cuma lewat satu senyuman kecil.",
+            "Kalau disuruh milih ulang dari awal, aku bakal tetap milih cerita yang ada kamu di dalamnya.",
+            "Semoga semesta selalu jaga senyummu biar nggak pernah pudar sama keadaan apa pun.",
+            "Kamu bukti nyata kalau keajaiban kecil bisa hadir dalam wujud seseorang.",
+            "Setiap tatapan dan ketawamu di foto ini adalah hal kecil yang selalu pengen aku simpen.",
+            "Terus melangkah dengan percaya diri ya, aku selalu dukung kamu dari dekat.",
+            "Bukan cuma hari ini, tapi di setiap hari berikutnya aku pengen lihat kamu terus bahagia.",
+            "Galaxy ini aku bikin khusus buat kamu, biar kamu inget seberapa berartinya kamu.",
+            "Selamat nikmatin setiap langkah indahmu, Nissa — kamu selalu pantas dapetin yang terbaik."
+        ];
+
+        const numGroups = heartImages.length;
+        const pointsPerGroup = Math.min(1200, Math.floor(galaxyParameters.count / numGroups));
+        const clickablePhotoGroups = [];
+
+        const positions = new Float32Array(galaxyParameters.count * 3);
+        const colors = new Float32Array(galaxyParameters.count * 3);
+
+        let pointIdx = 0;
+        for (let i = 0; i < galaxyParameters.count; i++) {
+            const radius = Math.pow(Math.random(), galaxyParameters.randomnessPower) * galaxyParameters.radius;
+            const branchAngle = (i % galaxyParameters.arms) / galaxyParameters.arms * Math.PI * 2;
+            const spinAngle = radius * galaxyParameters.spin;
+
+            const randomX = (Math.random() - 0.5) * galaxyParameters.randomness * radius;
+            const randomY = (Math.random() - 0.5) * galaxyParameters.randomness * radius * 1.2;
+            const randomZ = (Math.random() - 0.5) * galaxyParameters.randomness * radius;
+            const totalAngle = branchAngle + spinAngle;
+
+            if (radius < 30 && Math.random() < 0.8) continue;
+
+            const i3 = pointIdx * 3;
+            positions[i3] = Math.cos(totalAngle) * radius + randomX;
+            positions[i3 + 1] = randomY;
+            positions[i3 + 2] = Math.sin(totalAngle) * radius + randomZ;
+
+            const mixedColor = new THREE.Color(0x3a7bd5);
+            mixedColor.lerp(new THREE.Color(0x90caf9), radius / galaxyParameters.radius);
+            mixedColor.multiplyScalar(0.7 + 0.3 * Math.random());
+            colors[i3] = mixedColor.r;
+            colors[i3 + 1] = mixedColor.g;
+            colors[i3 + 2] = mixedColor.b;
+
+            pointIdx++;
+        }
+
+        const galaxyGeometry = new THREE.BufferGeometry();
+        galaxyGeometry.setAttribute('position', new THREE.BufferAttribute(positions.slice(0, pointIdx * 3), 3));
+        galaxyGeometry.setAttribute('color', new THREE.BufferAttribute(colors.slice(0, pointIdx * 3), 3));
+
+        const galaxyMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                uTime: { value: 0.0 },
+                uSize: { value: 50.0 * renderer.getPixelRatio() },
+                uRippleTime: { value: -1.0 },
+                uRippleSpeed: { value: 40.0 },
+                uRippleWidth: { value: 20.0 }
+            },
+            vertexShader: `
+                uniform float uSize;
+                uniform float uTime;
+                uniform float uRippleTime;
+                uniform float uRippleSpeed;
+                uniform float uRippleWidth;
+                varying vec3 vColor;
+
+                void main() {
+                    vColor = color;
+                    vec4 modelPosition = modelMatrix * vec4(position, 1.0);
+                    if (uRippleTime > 0.0) {
+                        float rippleRadius = (uTime - uRippleTime) * uRippleSpeed;
+                        float particleDist = length(modelPosition.xyz);
+                        float strength = 1.0 - smoothstep(rippleRadius - uRippleWidth, rippleRadius + uRippleWidth, particleDist);
+                        strength *= smoothstep(rippleRadius + uRippleWidth, rippleRadius - uRippleWidth, particleDist);
+                        if (strength > 0.0) {
+                            vColor += vec3(strength * 2.0);
+                        }
+                    }
+                    vec4 viewPosition = viewMatrix * modelPosition;
+                    gl_Position = projectionMatrix * viewPosition;
+                    gl_PointSize = uSize / -viewPosition.z;
+                }
+            `,
+            fragmentShader: `
+                varying vec3 vColor;
+                void main() {
+                    float dist = length(gl_PointCoord - vec2(0.5));
+                    if (dist > 0.5) discard;
+                    gl_FragColor = vec4(vColor, 1.0);
+                }
+            `,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            transparent: true,
+            vertexColors: true
+        });
+        const galaxy = new THREE.Points(galaxyGeometry, galaxyMaterial);
+        scene.add(galaxy);
+
+        function createNeonTexture(image, size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            const aspectRatio = image.width / image.height;
+            let drawWidth, drawHeight, offsetX, offsetY;
+            if (aspectRatio > 1) {
+                drawWidth = size;
+                drawHeight = size / aspectRatio;
+                offsetX = 0;
+                offsetY = (size - drawHeight) / 2;
+            } else {
+                drawHeight = size;
+                drawWidth = size * aspectRatio;
+                offsetX = (size - drawWidth) / 2;
+                offsetY = (size - drawHeight) / 2;
+            }
+            ctx.clearRect(0, 0, size, size);
+            const cornerRadius = size * 0.1;
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(offsetX + cornerRadius, offsetY);
+            ctx.lineTo(offsetX + drawWidth - cornerRadius, offsetY);
+            ctx.arcTo(offsetX + drawWidth, offsetY, offsetX + drawWidth, offsetY + cornerRadius, cornerRadius);
+            ctx.lineTo(offsetX + drawWidth, offsetY + drawHeight - cornerRadius);
+            ctx.arcTo(offsetX + drawWidth, offsetY + drawHeight, offsetX + drawWidth - cornerRadius, offsetY + drawHeight, cornerRadius);
+            ctx.lineTo(offsetX + cornerRadius, offsetY + drawHeight);
+            ctx.arcTo(offsetX, offsetY + drawHeight, offsetX, offsetY + drawHeight - cornerRadius, cornerRadius);
+            ctx.lineTo(offsetX, offsetY + cornerRadius);
+            ctx.arcTo(offsetX, offsetY, offsetX + cornerRadius, offsetY, cornerRadius);
+            ctx.closePath();
+            ctx.clip();
+            ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
+            ctx.restore();
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        // ---- PROGRESS TRACKER SESUAI TAHAPAN CUSTOM ----
+        let loadedCount = 0;
+        let isReady = false;
+
+        function setLoadingStep(percent) {
+            if (percent < 20) {
+                progressBar.style.width = '10%';
+                loaderStatus.textContent = '10% memuat isi poto nisa';
+            } else if (percent < 40) {
+                progressBar.style.width = '20%';
+                loaderStatus.textContent = '20% memuat keindahannya nisa';
+            } else if (percent < 80) {
+                progressBar.style.width = '40%';
+                loaderStatus.textContent = '40% memuat cantiknya nisa';
+            } else if (percent < 100) {
+                progressBar.style.width = '80%';
+                loaderStatus.textContent = '80% memuat keimutannya nisa';
+            } else {
+                progressBar.style.width = '100%';
+                loaderStatus.textContent = '100% selesai';
+            }
+        }
+
+        function markReady() {
+            if (isReady) return;
+            isReady = true;
+            setLoadingStep(100);
+            enterBtn.classList.add('ready');
+        }
+
+        function updateLoadingProgress() {
+            loadedCount++;
+            const percent = Math.min(100, Math.round((loadedCount / numGroups) * 100));
+            setLoadingStep(percent);
+            if (loadedCount >= numGroups) {
+                setTimeout(markReady, 350);
+            }
+        }
+
+        setTimeout(() => {
+            if (!isReady) markReady();
+        }, 6000);
+
+        for (let group = 0; group < numGroups; group++) {
+            const groupPositions = new Float32Array(pointsPerGroup * 3);
+            const groupColorsNear = new Float32Array(pointsPerGroup * 3);
+            const groupColorsFar = new Float32Array(pointsPerGroup * 3);
+            let validPointCount = 0;
+
+            for (let i = 0; i < pointsPerGroup; i++) {
+                const idx = validPointCount * 3;
+                const globalIdx = group * pointsPerGroup + i;
+                const radius = Math.pow(Math.random(), galaxyParameters.randomnessPower) * galaxyParameters.radius;
+                if (radius < 30) continue;
+
+                const branchAngle = (globalIdx % galaxyParameters.arms) / galaxyParameters.arms * Math.PI * 2;
+                const spinAngle = radius * galaxyParameters.spin;
+
+                const randomX = (Math.random() - 0.5) * galaxyParameters.randomness * radius;
+                const randomY = (Math.random() - 0.5) * galaxyParameters.randomness * radius * 0.5;
+                const randomZ = (Math.random() - 0.5) * galaxyParameters.randomness * radius;
+                const totalAngle = branchAngle + spinAngle;
+
+                groupPositions[idx] = Math.cos(totalAngle) * radius + randomX;
+                groupPositions[idx + 1] = randomY;
+                groupPositions[idx + 2] = Math.sin(totalAngle) * radius + randomZ;
+
+                groupColorsNear[idx] = 1;
+                groupColorsNear[idx + 1] = 1;
+                groupColorsNear[idx + 2] = 1;
+
+                const colorFar = galaxyParameters.insideColor.clone();
+                colorFar.lerp(galaxyParameters.outsideColor, radius / galaxyParameters.radius);
+                colorFar.multiplyScalar(0.7 + 0.3 * Math.random());
+                groupColorsFar[idx] = colorFar.r;
+                groupColorsFar[idx + 1] = colorFar.g;
+                groupColorsFar[idx + 2] = colorFar.b;
+
+                validPointCount++;
+            }
+
+            if (validPointCount === 0) {
+                updateLoadingProgress();
+                continue;
+            }
+
+            const groupGeometryNear = new THREE.BufferGeometry();
+            groupGeometryNear.setAttribute('position', new THREE.BufferAttribute(groupPositions.slice(0, validPointCount * 3), 3));
+            groupGeometryNear.setAttribute('color', new THREE.BufferAttribute(groupColorsNear.slice(0, validPointCount * 3), 3));
+
+            const groupGeometryFar = new THREE.BufferGeometry();
+            groupGeometryFar.setAttribute('position', new THREE.BufferAttribute(groupPositions.slice(0, validPointCount * 3), 3));
+            groupGeometryFar.setAttribute('color', new THREE.BufferAttribute(groupColorsFar.slice(0, validPointCount * 3), 3));
+
+            const posAttr = groupGeometryFar.getAttribute('position');
+            let cx = 0, cy = 0, cz = 0;
+            for (let i = 0; i < posAttr.count; i++) {
+                cx += posAttr.getX(i);
+                cy += posAttr.getY(i);
+                cz += posAttr.getZ(i);
+            }
+            cx /= posAttr.count;
+            cy /= posAttr.count;
+            cz /= posAttr.count;
+            groupGeometryNear.translate(-cx, -cy, -cz);
+            groupGeometryFar.translate(-cx, -cy, -cz);
+
+            const img = new window.Image();
+            img.crossOrigin = "Anonymous";
+            img.src = heartImages[group];
+            img.onload = () => {
+                const neonTexture = createNeonTexture(img, 256);
+                const materialNear = new THREE.PointsMaterial({
+                    size: 1.8,
+                    map: neonTexture,
+                    transparent: false,
+                    alphaTest: 0.2,
+                    depthWrite: true,
+                    depthTest: true,
+                    blending: THREE.NormalBlending,
+                    vertexColors: true
+                });
+
+                const materialFar = new THREE.PointsMaterial({
+                    size: 1.8,
+                    map: neonTexture,
+                    transparent: true,
+                    alphaTest: 0.2,
+                    depthWrite: false,
+                    blending: THREE.AdditiveBlending,
+                    vertexColors: true
+                });
+
+                const pointsObject = new THREE.Points(groupGeometryFar, materialFar);
+                pointsObject.position.set(cx, cy, cz);
+                pointsObject.userData.materialNear = materialNear;
+                pointsObject.userData.geometryNear = groupGeometryNear;
+                pointsObject.userData.materialFar = materialFar;
+                pointsObject.userData.geometryFar = groupGeometryFar;
+                pointsObject.userData.photoIndex = group;
+                pointsObject.userData.imageUrl = heartImages[group];
+                pointsObject.userData.message = photoMessages[group % photoMessages.length];
+
+                scene.add(pointsObject);
+                clickablePhotoGroups.push(pointsObject);
+                updateLoadingProgress();
+            };
+            img.onerror = () => {
+                updateLoadingProgress();
+            };
+        }
+
+        // ---- CAHAYA & BINTANG ----
+        scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+
+        const starCount = 20000;
+        const starGeometry = new THREE.BufferGeometry();
+        const starPositions = new Float32Array(starCount * 3);
+        for (let i = 0; i < starCount; i++) {
+            starPositions[i * 3] = (Math.random() - 0.5) * 900;
+            starPositions[i * 3 + 1] = (Math.random() - 0.5) * 900;
+            starPositions[i * 3 + 2] = (Math.random() - 0.5) * 900;
+        }
+        starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+
+        const starMaterial = new THREE.PointsMaterial({
+            color: 0xffffff,
+            size: 0.75,
+            transparent: true,
+            opacity: 0.85,
+            depthWrite: false
+        });
+        const starField = new THREE.Points(starGeometry, starMaterial);
+        starField.name = 'starfield';
+        starField.renderOrder = 999;
+        scene.add(starField);
+
+        // ---- BINTANG JATUH NATURAL (GARIS TIPIS PUTIH KEEMASAN, TANPA BULET-BULET) ----
+        let shootingStars = [];
+
+        function createShootingStar() {
+            const trailLength = 60;
+            const curve = createRandomCurve();
+            const trailPoints = [];
+            for (let i = 0; i < trailLength; i++) {
+                trailPoints.push(curve.getPoint(i / (trailLength - 1)));
+            }
+            const trailGeometry = new THREE.BufferGeometry().setFromPoints(trailPoints);
+            const trailMaterial = new THREE.LineBasicMaterial({
+                color: 0xfff5d6,
+                transparent: true,
+                opacity: 0.0
+            });
+            const trail = new THREE.Line(trailGeometry, trailMaterial);
+
+            const shootingStarGroup = new THREE.Group();
+            shootingStarGroup.add(trail);
+            shootingStarGroup.userData = {
+                curve: curve,
+                progress: 0,
+                speed: 0.0018 + Math.random() * 0.0012,
+                life: 0,
+                maxLife: 240,
+                trail: trail,
+                trailLength: trailLength,
+                trailPoints: trailPoints,
+            };
+            scene.add(shootingStarGroup);
+            shootingStars.push(shootingStarGroup);
+        }
+
+        function createRandomCurve() {
+            const startPoint = new THREE.Vector3(-250 + Math.random() * 150, 80 + Math.random() * 140, -150 + Math.random() * 200);
+            const endPoint = new THREE.Vector3(550 + Math.random() * 200, startPoint.y - (120 + Math.random() * 140), startPoint.z + (-80 + Math.random() * 160));
+            const controlPoint1 = new THREE.Vector3(
+                startPoint.x + (endPoint.x - startPoint.x) * 0.33,
+                startPoint.y + (endPoint.y - startPoint.y) * 0.33,
+                startPoint.z + (endPoint.z - startPoint.z) * 0.33
+            );
+            const controlPoint2 = new THREE.Vector3(
+                startPoint.x + (endPoint.x - startPoint.x) * 0.66,
+                startPoint.y + (endPoint.y - startPoint.y) * 0.66,
+                startPoint.z + (endPoint.z - startPoint.z) * 0.66
+            );
+            return new THREE.CubicBezierCurve3(startPoint, controlPoint1, controlPoint2, endPoint);
+        }
+
+        // ---- PLANET TENGAH ----
+        function createPlanetTexture(size = 512) {
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            const gradient = ctx.createRadialGradient(size / 2, size / 2, size / 8, size / 2, size / 2, size / 2);
+            gradient.addColorStop(0.00, '#e3f2fd');
+            gradient.addColorStop(0.20, '#90caf9');
+            gradient.addColorStop(0.45, '#42a5f5');
+            gradient.addColorStop(0.75, '#1e88e5');
+            gradient.addColorStop(1.00, '#1565c0');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+
+            const spotColors = ['#bbdefb', '#90caf9', '#64b5f6', '#e3f2fd', '#42a5f5'];
+            for (let i = 0; i < 30; i++) {
+                const x = Math.random() * size;
+                const y = Math.random() * size;
+                const radius = 30 + Math.random() * 100;
+                const color = spotColors[Math.floor(Math.random() * spotColors.length)];
+                const spotGradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+                spotGradient.addColorStop(0, color + 'aa');
+                spotGradient.addColorStop(1, color + '00');
+                ctx.fillStyle = spotGradient;
+                ctx.fillRect(0, 0, size, size);
+            }
+
+            if (ctx.filter !== undefined) {
+                ctx.filter = 'blur(2px)';
+                ctx.drawImage(canvas, 0, 0);
+                ctx.filter = 'none';
+            }
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        const planetRadius = 10;
+        const planetGeometry = new THREE.SphereGeometry(planetRadius, 48, 48);
+        const planetMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                time: { value: 0.0 },
+                baseTexture: { value: createPlanetTexture() }
+            },
+            vertexShader: `
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform float time;
+                uniform sampler2D baseTexture;
+                varying vec2 vUv;
+                void main() {
+                    vec2 uv = vUv;
+                    float angle = length(uv - vec2(0.5)) * 3.0;
+                    float twist = sin(angle * 3.0 + time) * 0.1;
+                    uv.x += twist * sin(time * 0.5);
+                    uv.y += twist * cos(time * 0.5);
+                    vec4 texColor = texture2D(baseTexture, uv);
+                    gl_FragColor = texColor;
+                }
+            `
+        });
+        const planet = new THREE.Mesh(planetGeometry, planetMaterial);
+        planet.name = 'main-planet';
+        scene.add(planet);
+
+        // ---- CINCIN TEKS NISSA & 24/09/2026 ----
+        const ringTexts = [
+            'NISSA CANTIK',
+            'NISSA IMUT',
+            'NISSA KAMU TERINDAH',
+            '24/09/2026'
+        ];
+
+        function createTextRings() {
+            const numRings = ringTexts.length;
+            const baseRingRadius = planetRadius * 1.1;
+            const ringSpacing = 5;
+            window.textRings = [];
+
+            for (let i = 0; i < numRings; i++) {
+                const ringRadius = baseRingRadius + i * ringSpacing;
+                const textureHeight = 150;
+                const fontSize = Math.max(130, 0.8 * textureHeight);
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.font = `bold ${fontSize}px Arial, sans-serif`;
+
+                const singleText = ringTexts[i % ringTexts.length];
+                const repeatedTextSegment = singleText + '   ';
+                const segmentWidth = tempCtx.measureText(repeatedTextSegment).width;
+                const textureWidthCircumference = 2 * Math.PI * ringRadius * 180;
+                const repeatCount = Math.max(1, Math.ceil(textureWidthCircumference / segmentWidth));
+
+                const fullText = repeatedTextSegment.repeat(repeatCount);
+                const finalTextureWidth = Math.max(1, segmentWidth * repeatCount);
+
+                const textCanvas = document.createElement('canvas');
+                textCanvas.width = Math.ceil(finalTextureWidth);
+                textCanvas.height = textureHeight;
+                const ctx = textCanvas.getContext('2d');
+                ctx.clearRect(0, 0, textCanvas.width, textureHeight);
+                ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'alphabetic';
+
+                ctx.shadowColor = 'rgba(144, 202, 249, 0.8)';
+                ctx.shadowBlur = 12;
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(fullText, 0, textureHeight * 0.84);
+
+                const ringTexture = new THREE.CanvasTexture(textCanvas);
+                ringTexture.wrapS = THREE.RepeatWrapping;
+                ringTexture.repeat.x = finalTextureWidth / textureWidthCircumference;
+                ringTexture.needsUpdate = true;
+
+                const ringGeometry = new THREE.CylinderGeometry(ringRadius, ringRadius, 1, 128, 1, true);
+                const ringMaterial = new THREE.MeshBasicMaterial({
+                    map: ringTexture,
+                    transparent: true,
+                    side: THREE.DoubleSide,
+                    alphaTest: 0.01,
+                    opacity: 1,
+                    depthWrite: false,
+                });
+
+                const textRingMesh = new THREE.Mesh(ringGeometry, ringMaterial);
+                textRingMesh.rotation.y = Math.PI / 2;
+
+                const ringGroup = new THREE.Group();
+                ringGroup.add(textRingMesh);
+                ringGroup.userData = {
+                    ringRadius: ringRadius,
+                    angleOffset: 0.15 * Math.PI * 0.5,
+                    speed: 0.00225,
+                    isTextRing: true
+                };
+
+                ringGroup.rotation.x = (i / numRings) * Math.PI;
+                scene.add(ringGroup);
+                window.textRings.push(ringGroup);
+            }
+        }
+
+        function animatePlanetSystem() {
+            if (!window.textRings) return;
+            const time = Date.now() * 0.001;
+            window.textRings.forEach((ringGroup, index) => {
+                const userData = ringGroup.userData;
+                userData.angleOffset += userData.speed;
+                ringGroup.rotation.x = (index / window.textRings.length) * Math.PI;
+                ringGroup.rotation.y = userData.angleOffset;
+                const pulse = (Math.sin(time * 1.5 + index) + 1) / 2;
+                const textMesh = ringGroup.children[0];
+                if (textMesh && textMesh.material) {
+                    textMesh.material.opacity = 0.8 + pulse * 0.2;
+                }
+            });
+        }
+
+        // ---- INTERAKSI KETUK FOTO (RAYCASTER) ----
+        const raycaster = new THREE.Raycaster();
+        raycaster.params.Points.threshold = 2.8;
+        const pointer = new THREE.Vector2();
+
+        let pointerDownPos = { x: 0, y: 0 };
+        let pointerDownTime = 0;
+
+        function openPhotoCard(photoGroup) {
+            const idx = photoGroup.userData.photoIndex + 1;
+            memoryBadge.textContent = `Foto #${idx}`;
+            memoryImg.src = photoGroup.userData.imageUrl;
+            memoryQuote.textContent = `"${photoGroup.userData.message}"`;
+            photoModal.classList.add('show');
+            controls.autoRotate = false;
+        }
+
+        function closePhotoCard() {
+            photoModal.classList.remove('show');
+            controls.autoRotate = true;
+        }
+
+        closeCardBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closePhotoCard();
+        });
+
+        photoModal.addEventListener('click', (e) => {
+            if (e.target === photoModal) {
+                closePhotoCard();
+            }
+        });
+
+        renderer.domElement.addEventListener('pointerdown', (e) => {
+            pointerDownPos = { x: e.clientX, y: e.clientY };
+            pointerDownTime = performance.now();
+        });
+
+        renderer.domElement.addEventListener('pointerup', (e) => {
+            if (!introStarted || photoModal.classList.contains('show')) return;
+
+            const dx = e.clientX - pointerDownPos.x;
+            const dy = e.clientY - pointerDownPos.y;
+            const distance = Math.hypot(dx, dy);
+            const duration = performance.now() - pointerDownTime;
+
+            if (distance < 12 && duration < 450) {
+                const rect = renderer.domElement.getBoundingClientRect();
+                pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+                raycaster.setFromCamera(pointer, camera);
+                const intersects = raycaster.intersectObjects(clickablePhotoGroups, false);
+
+                if (intersects.length > 0) {
+                    const hitGroup = intersects[0].object;
+                    openPhotoCard(hitGroup);
+                }
+            }
+        });
+
+        // ---- AUDIO & ANIMASI KAMERA ----
+        function playGalaxyAudio() {
+            const audio = document.getElementById('bg-music');
+            if (audio) {
+                audio.play().catch(err => console.warn("Audio autoplay dicegah browser:", err));
+            }
+        }
+
+        function startCameraAnimation() {
+            const startPos = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+            const midPos1 = { x: startPos.x, y: 0, z: startPos.z };
+            const midPos2 = { x: startPos.x, y: 0, z: 160 };
+            const endPos = { x: -40, y: 100, z: 100 };
+
+            const duration1 = 0.2;
+            const duration2 = 0.55;
+            const duration3 = 0.4;
+            let progress = 0;
+
+            function animatePath() {
+                progress += 0.0028;
+                let newPos;
+                if (progress < duration1) {
+                    const t = progress / duration1;
+                    newPos = {
+                        x: startPos.x + (midPos1.x - startPos.x) * t,
+                        y: startPos.y + (midPos1.y - startPos.y) * t,
+                        z: startPos.z + (midPos1.z - startPos.z) * t,
+                    };
+                } else if (progress < duration1 + duration2) {
+                    const t = (progress - duration1) / duration2;
+                    newPos = {
+                        x: midPos1.x + (midPos2.x - midPos1.x) * t,
+                        y: midPos1.y + (midPos2.y - midPos1.y) * t,
+                        z: midPos1.z + (midPos2.z - midPos1.z) * t,
+                    };
+                } else if (progress < duration1 + duration2 + duration3) {
+                    const t = (progress - duration1 - duration2) / duration3;
+                    const easedT = 0.5 - 0.5 * Math.cos(Math.PI * t);
+                    newPos = {
+                        x: midPos2.x + (endPos.x - midPos2.x) * easedT,
+                        y: midPos2.y + (endPos.y - midPos2.y) * easedT,
+                        z: midPos2.z + (endPos.z - midPos2.z) * easedT,
+                    };
+                } else {
+                    camera.position.set(endPos.x, endPos.y, endPos.z);
+                    camera.lookAt(0, 0, 0);
+                    controls.target.set(0, 0, 0);
+                    controls.update();
+                    controls.enabled = true;
+                    return;
+                }
+                camera.position.set(newPos.x, newPos.y, newPos.z);
+                camera.lookAt(0, 0, 0);
+                requestAnimationFrame(animatePath);
+            }
+            controls.enabled = false;
+            animatePath();
+        }
+
+        // ---- LOOP RENDER UTAMA ----
+        let introStarted = false;
+        let fadeOpacity = 0.1;
+        let fadeInProgress = false;
+
+        const originalStarCount = starGeometry.getAttribute('position').count;
+        starField.geometry.setDrawRange(0, Math.floor(originalStarCount * 0.15));
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = performance.now() * 0.001;
+
+            controls.update();
+            planet.material.uniforms.time.value = time * 0.5;
+
+            if (fadeInProgress && fadeOpacity < 1) {
+                fadeOpacity = Math.min(1, fadeOpacity + 0.025);
+            }
+
+            if (introStarted) {
+                scene.traverse(obj => {
+                    if (!(obj.userData.isTextRing || (obj.parent && obj.parent.userData && obj.parent.userData.isTextRing) || obj === planet || obj === centralGlow || obj.type === 'Scene')) {
+                        if (obj.material && obj.material.opacity !== undefined) {
+                            obj.material.transparent = true;
+                            obj.material.opacity = fadeOpacity;
+                        }
+                    } else if (obj.material && obj.material.opacity !== undefined) {
+                        obj.material.opacity = 1;
+                        obj.material.transparent = false;
+                    }
+                });
+            }
+
+            // Update Bintang Jatuh Natural (Garis tanpa kepala bulat)
+            for (let i = shootingStars.length - 1; i >= 0; i--) {
+                const star = shootingStars[i];
+                star.userData.life++;
+                let opacity = 0.7;
+                if (star.userData.life < 30) {
+                    opacity = (star.userData.life / 30) * 0.7;
+                } else if (star.userData.life > star.userData.maxLife - 30) {
+                    opacity = ((star.userData.maxLife - star.userData.life) / 30) * 0.7;
+                }
+                star.userData.progress += star.userData.speed;
+                if (star.userData.progress > 1) {
+                    scene.remove(star);
+                    shootingStars.splice(i, 1);
+                    continue;
+                }
+
+                const trailPoints = star.userData.trailPoints;
+                for (let j = 0; j < star.userData.trailLength; j++) {
+                    const trailProgress = Math.max(0, star.userData.progress - j * 0.0035);
+                    trailPoints[j].copy(star.userData.curve.getPoint(trailProgress));
+                }
+                star.userData.trail.geometry.setFromPoints(trailPoints);
+                star.userData.trail.material.opacity = opacity;
+            }
+
+            if (shootingStars.length < 2 && Math.random() < 0.015) {
+                createShootingStar();
+            }
+
+            scene.traverse(obj => {
+                if (obj.isPoints && obj.userData.materialNear && obj.userData.materialFar) {
+                    const positionAttr = obj.geometry.getAttribute('position');
+                    let isClose = false;
+                    for (let i = 0; i < positionAttr.count; i++) {
+                        const worldX = positionAttr.getX(i) + obj.position.x;
+                        const worldY = positionAttr.getY(i) + obj.position.y;
+                        const worldZ = positionAttr.getZ(i) + obj.position.z;
+                        if (camera.position.distanceTo(new THREE.Vector3(worldX, worldY, worldZ)) < 10) {
+                            isClose = true;
+                            break;
+                        }
+                    }
+                    if (isClose) {
+                        if (obj.material !== obj.userData.materialNear) {
+                            obj.material = obj.userData.materialNear;
+                            obj.geometry = obj.userData.geometryNear;
+                        }
+                    } else if (obj.material !== obj.userData.materialFar) {
+                        obj.material = obj.userData.materialFar;
+                        obj.geometry = obj.userData.geometryFar;
+                    }
+                }
+            });
+
+            planet.lookAt(camera.position);
+            animatePlanetSystem();
+
+            if (starField && starField.material) {
+                starField.material.opacity = 0.9;
+                starField.material.transparent = true;
+            }
+            renderer.render(scene, camera);
+        }
+
+        // ---- RESIZE HANDLER ----
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // ---- EVENT MASUK GALAXY DARI LOADING SCREEN ----
+        enterBtn.addEventListener('click', () => {
+            loadingScreen.classList.add('fade-out');
+            document.body.classList.add('intro-started');
+            introStarted = true;
+            fadeInProgress = true;
+
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().catch(() => {});
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            }
+
+            playGalaxyAudio();
+            createTextRings();
+            startCameraAnimation();
+            starField.geometry.setDrawRange(0, originalStarCount);
+        });
+
+        createShootingStar();
+        animate();
+    </script>
+</body>
+</html>
